@@ -1,0 +1,201 @@
+{
+  "mapping": {
+    "properties": {
+      "fields": {
+        "properties": {
+          "data": {
+            "properties": {
+              "agency": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "bedrooms": {
+                "properties": {
+                  "minimum": {
+                    "type": "long"
+                  },
+                  "maximum": {
+                    "type": "long"
+                  }
+                }
+              },
+              "bathrooms": {
+                "properties": {
+                  "minimum": {
+                    "type": "long"
+                  },
+                  "maximum": {
+                    "type": "long"
+                  }
+                }
+              },
+              "guests": {
+                "properties": {
+                  "minimum": {
+                    "type": "long"
+                  },
+                  "maximum": {
+                    "type": "long"
+                  }
+                }
+              },
+              "nightlyLow": {
+                "properties": {
+                  "minimum": {
+                    "type": "long"
+                  },
+                  "maximum": {
+                    "type": "long"
+                  }
+                }
+              },
+              "nightlyHigh": {
+                "properties": {
+                  "minimum": {
+                    "type": "long"
+                  },
+                  "maximum": {
+                    "type": "long"
+                  }
+                }
+              },
+              "dateRange": {
+                "properties": {
+                  "arrivalDate": {
+                    "type": "date"
+                  },
+                  "departureDate": {
+                    "type": "date"
+                  }
+                }
+              },
+              "location": {
+                "properties": {
+                  "distance": {
+                    "type": "text"
+                  },
+                  "latitude": {
+                    "type": "long"
+                  },
+                  "longitude": {
+                    "type": "long"
+                  }
+                }
+              },
+              "features": {
+                "type": "nested",
+                "properties": {
+                  "searchType": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  },
+                  "items": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "host": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "index": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "ip": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "rawQuery": {
+            "eager_global_ordinals": false,
+            "index_phrases": false,
+            "fielddata": false,
+            "norms": true,
+            "index": true,
+            "store": true,
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "ignore_above": 256,
+                "type": "keyword"
+              }
+            },
+            "index_options": "positions"
+          },
+          "type": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "url": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          }
+        }
+      },
+      "level": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "message": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "timestamp": {
+        "type": "date"
+      }
+    }
+  }
+}

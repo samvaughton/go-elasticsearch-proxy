@@ -1,0 +1,22 @@
+server:
+  address: ":8080"
+  tls:
+    enabled: false
+    certificatePath: "server.crt"
+    privateKeyPath: "server.key"
+
+proxy:
+  elasticsearch:
+    scheme: "https"
+    host: "localhost:9243"
+
+logging:
+  level: "error"
+  elasticsearch:
+    scheme: "https"
+    host: "localhost:9243"
+    index: "query-log-index"
+    username: "elastic"
+    password: "password"
+    logBufferSize: 20
+    queryDebounceDuration: "3000ms"

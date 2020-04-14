@@ -1,0 +1,6 @@
+config.yml
+*.iml
+*.ipr
+*.iws
+*.crt
+*.key
