@@ -1,9 +1,12 @@
 server:
-  address: ":8080"
+  host: "proxy.example.com"
+  address: ":9243"
   tls:
+    email: "admin@example.com"
     enabled: false
-    certificatePath: "server.crt"
-    privateKeyPath: "server.key"
+    useLetsEncrypt: true
+    certificatePath: ""
+    privateKeyPath: ""
 
 proxy:
   elasticsearch:

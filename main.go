@@ -1,13 +1,13 @@
 package main
 
 import (
+	"elasticsearch-proxy/config"
+	"elasticsearch-proxy/elasticsearch"
+	"elasticsearch-proxy/proxy"
 	"flag"
 	"github.com/apex/log"
 	"github.com/apex/log/handlers/text"
 	"os"
-	"rentivo-es-proxy/config"
-	"rentivo-es-proxy/elasticsearch"
-	"rentivo-es-proxy/proxy"
 )
 
 var configLocationFlag = flag.String(
@@ -31,5 +31,5 @@ func main() {
 
 	elasticsearch.ConfigureEsLogger(cfg)
 
-	proxy.StartProxyServer(proxy.NewProxyServer(cfg), cfg)
+	proxy.ConfigureAndStartProxyServer(cfg)
 }

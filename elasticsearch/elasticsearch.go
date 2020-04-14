@@ -1,10 +1,10 @@
 package elasticsearch
 
 import (
+	"elasticsearch-proxy/config"
 	"fmt"
 	"github.com/apex/log"
 	"github.com/elastic/go-elasticsearch/v7"
-	"rentivo-es-proxy/config"
 	"time"
 )
 

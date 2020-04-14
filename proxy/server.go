@@ -2,16 +2,17 @@ package proxy
 
 import (
 	"crypto/tls"
+	"elasticsearch-proxy/config"
+	"elasticsearch-proxy/elasticsearch"
 	"github.com/apex/log"
+	"github.com/caddyserver/certmagic"
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"rentivo-es-proxy/config"
-	"rentivo-es-proxy/elasticsearch"
 	"time"
 )
 
-func NewProxyServer(cfg config.Config) *http.Server {
+func ConfigureAndStartProxyServer(cfg config.Config) {
 	targetUrl, err := cfg.Proxy.Elasticsearch.ParseUrl()
 
 	if err != nil {
@@ -33,35 +34,50 @@ func NewProxyServer(cfg config.Config) *http.Server {
 
 	esQueue := elasticsearch.NewQueue(duration)
 
-	context := NewReverseProxyHandlerContext(targetUrl, reverseProxy, &esQueue)
+	proxyContext := NewReverseProxyHandlerContext(targetUrl, reverseProxy, &esQueue)
 
-	mux.HandleFunc("/", NewReverseProxyHandler(context))
+	mux.HandleFunc("/", NewReverseProxyHandler(proxyContext))
 
 	go esQueue.Start()
 
 	serv := &http.Server{
-		Addr:    cfg.Server.Address,
-		Handler: mux,
+		Addr:         cfg.Server.Address,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+		Handler:      mux,
 	}
 
-	return serv
-}
+	if cfg.Server.Tls.Enabled && cfg.Server.Tls.UseLetsEncrypt {
+		//certmagic.DefaultACME.CA = certmagic.LetsEncryptStagingCA
+		certmagic.DefaultACME.Agreed = true
+		certmagic.DefaultACME.Email = cfg.Server.Tls.Email
 
-func StartProxyServer(serv *http.Server, cfg config.Config) {
+		tlsConfig, err := certmagic.TLS([]string{cfg.Server.Host})
+		if err != nil {
+			panic(err)
+		}
+
+		serv.TLSConfig = tlsConfig
+	}
+
 	log.Debug("Proxying to " + cfg.Proxy.Elasticsearch.Scheme + "://" + cfg.Proxy.Elasticsearch.Host)
 
-	var err error
-
 	if cfg.Server.IsTlsValid() {
-		log.Debug("Listening on " + cfg.Server.Address + " (with TLS)")
-
-		err = serv.ListenAndServeTLS(cfg.Server.Tls.CertificatePath, cfg.Server.Tls.PrivateKeyPath)
+		if cfg.Server.Tls.UseLetsEncrypt {
+			log.Debug("Listening on " + cfg.Server.Address + " (with TLS using Let's Encrypt)")
+			err = serv.ListenAndServeTLS("", "")
+		} else {
+			log.Debug("Listening on " + cfg.Server.Address + " (with TLS)")
+			err = serv.ListenAndServeTLS(cfg.Server.Tls.CertificatePath, cfg.Server.Tls.PrivateKeyPath)
+		}
 	} else {
 		log.Debug("Listening on " + cfg.Server.Address + " (without TLS)")
 
 		err = serv.ListenAndServe()
 	}
 
-	log.Fatal(err.Error())
-
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }

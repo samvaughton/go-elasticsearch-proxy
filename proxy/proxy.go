@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"elasticsearch-proxy/elasticsearch"
 	"fmt"
 	"github.com/apex/log"
 	"github.com/tidwall/gjson"
@@ -8,7 +9,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"rentivo-es-proxy/elasticsearch"
 	"strings"
 )
 

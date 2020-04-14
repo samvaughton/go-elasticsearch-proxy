@@ -15,12 +15,15 @@ type Config struct {
 }
 
 type ServerConfig struct {
+	Host    string          `yaml:"host"`
 	Address string          `yaml:"address"`
 	Tls     ServerTlsConfig `yaml:"tls"`
 }
 
 type ServerTlsConfig struct {
+	Email           string `yaml:"email"`
 	Enabled         bool   `yaml:"enabled"`
+	UseLetsEncrypt  bool   `yaml:"useLetsEncrypt"`
 	CertificatePath string `yaml:"certificatePath"`
 	PrivateKeyPath  string `yaml:"privateKeyPath"`
 }
@@ -50,8 +53,16 @@ type LoggingConfig struct {
 }
 
 func (s *ServerConfig) IsTlsValid() bool {
-	if s.Tls.CertificatePath == "" || s.Tls.PrivateKeyPath == "" || s.Tls.Enabled == false {
+	if s.Tls.Enabled == false {
 		return false
+	}
+
+	if s.Tls.UseLetsEncrypt {
+		return true
+	}
+
+	if s.Tls.CertificatePath == "" || s.Tls.PrivateKeyPath == "" {
+		return false // Not using LE, check for paths
 	}
 
 	return true
