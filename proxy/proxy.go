@@ -64,11 +64,14 @@ func NewReverseProxyHandler(ctx ReverseProxyHandlerContext) ReverseProxyHandler 
 
 					for _, query := range elasticsearch.DeDuplicateJsonLines(parsedQueryLines) {
 						fields := GenerateElasticsearchQueryFields(requestType, requestedUrl, req, query)
+						metrics := fields.Get("data").(map[string]interface{})
 
-						// Since this is the elasticsearch queries, we want to de-duplicate before we send the data off to elasticsearch
-						ctx.Queue.Channel <- elasticsearch.QueueLogEntry{
-							Key:    fmt.Sprintf("%s", fields.Get("ip")),
-							Fields: fields,
+						if len(metrics) > 0 {
+							// Since this is the elasticsearch queries, we want to de-bounce which is handled by the queue
+							ctx.Queue.Channel <- elasticsearch.QueueLogEntry{
+								Key:    fmt.Sprintf("%s", fields.Get("ip")),
+								Fields: fields,
+							}
 						}
 					}
 				}
