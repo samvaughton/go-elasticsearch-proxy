@@ -24,3 +24,4 @@ My first foray into Go, this application runs a HTTP proxy intended for Elastics
  `sudo setcap cap_net_bind_service=+ep ./elasticsearch-proxy`
  
  - Enable `.service` file to start on boot `sudo systemctl enable elasticsearch-proxy`
+ - Monitor the service logs `sudo journalctl --unit=elasticsearch-proxy --follow`
