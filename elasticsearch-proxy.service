@@ -1,0 +1,11 @@
+[Unit]
+Description=Elasticsearch Proxy
+Documentation=https://github.com/samvaughton/go-elasticsearch-proxy
+
+[Service]
+PIDFile=/run/elasticsearch-proxy.pid
+ExecStart=/home/bitnami/elasticsearch-proxy/elasticsearch-proxy
+
+[Install]
+WantedBy=multi-user.target
+Alias=es-proxy

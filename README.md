@@ -22,3 +22,5 @@ My first foray into Go, this application runs a HTTP proxy intended for Elastics
  - Let's Encrypt needs port 443 to perform the tls-alpn-01 challenge, use this command if you do not want to run as root:
  
  `sudo setcap cap_net_bind_service=+ep ./elasticsearch-proxy`
+ 
+ - Enable `.service` file to start on boot `sudo systemctl enable elasticsearch-proxy`
