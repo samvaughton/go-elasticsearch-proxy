@@ -56,7 +56,7 @@ func NewReverseProxyHandler(ctx ReverseProxyHandlerContext) ReverseProxyHandler 
 		index := fields.Get("index").(string)
 		metrics := fields.Get("data").(map[string]interface{})
 
-		if strings.Contains(index, "lovecottages") {
+		if strings.Contains(index, "lovecottages") && len(metrics) == 1 {
 
 			// If there is a single nightly metric that is the default range then we can not log this search request
 			if metric, exists := elasticsearch.FindMetricByName(elasticsearch.MetricNightlyLowPrice, metrics); exists {
