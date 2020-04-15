@@ -2,6 +2,7 @@ package elasticsearch
 
 import (
 	"github.com/tidwall/gjson"
+	"time"
 )
 
 const MetricDateRange = "dateRange"
@@ -20,8 +21,9 @@ const MetricNightlyHighPrice = "nightlyHigh"
 const MetricUnknown = "unknown"
 
 type MetricDateRangeData struct {
-	ArrivalDate   string `json:"arrivalDate"`
-	DepartureDate string `json:"departureDate"`
+	ArrivalDate   string  `json:"arrivalDate"`
+	DepartureDate string  `json:"departureDate"`
+	Nights        float64 `json:"nights"`
 }
 
 type MetricFeaturesData struct {
@@ -53,9 +55,23 @@ var MetricExtractionHandlersMap = map[string]func(metricType string, query gjson
 		}
 	},
 	MetricDateRange: func(metricType string, query gjson.Result) interface{} {
+		arrivalDate := query.Get("script.params.arrivalDate").String()
+		departureDate := query.Get("script.params.departureDate").String()
+
+		aParsed, _ := time.Parse("2006-01-02", arrivalDate)
+		dParsed, _ := time.Parse("2006-01-02", departureDate)
+
+		var nights float64
+		if arrivalDate == departureDate {
+			nights = 0
+		} else {
+			nights = (dParsed.Sub(aParsed)).Hours() / 24
+		}
+
 		return MetricDateRangeData{
-			ArrivalDate:   query.Get("script.params.arrivalDate").String(),
-			DepartureDate: query.Get("script.params.departureDate").String(),
+			ArrivalDate:   arrivalDate,
+			DepartureDate: departureDate,
+			Nights:        nights,
 		}
 	},
 	MetricAgency: func(metricType string, query gjson.Result) interface{} {

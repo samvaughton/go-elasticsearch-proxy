@@ -71,6 +71,9 @@
                   },
                   "departureDate": {
                     "type": "date"
+                  },
+                  "nights": {
+                    "type": "long"
                   }
                 }
               },
