@@ -27,22 +27,51 @@ func GetRequestTypeString(requestType int) string {
 }
 
 type ReverseProxyHandlerContext struct {
-	Target *url.URL
-	Proxy  *httputil.ReverseProxy
-	Queue  *elasticsearch.Queue
+	Target  *url.URL
+	Proxy   *httputil.ReverseProxy
+	Queue   *elasticsearch.Queue
+	Filters elasticsearch.FilterProcessor
 }
 
 func NewReverseProxyHandlerContext(targetUrl *url.URL, proxy *httputil.ReverseProxy, queue *elasticsearch.Queue) ReverseProxyHandlerContext {
 	return ReverseProxyHandlerContext{
-		Target: targetUrl,
-		Proxy:  proxy,
-		Queue:  queue,
+		Target:  targetUrl,
+		Proxy:   proxy,
+		Queue:   queue,
+		Filters: elasticsearch.NewFilterProcessor(),
 	}
 }
 
 type ReverseProxyHandler func(res http.ResponseWriter, req *http.Request)
 
 func NewReverseProxyHandler(ctx ReverseProxyHandlerContext) ReverseProxyHandler {
+
+	ctx.Filters.AddFilter(func(fields log.Fields) bool {
+		metrics := fields.Get("data").(map[string]interface{})
+
+		return len(metrics) > 0
+	})
+
+	ctx.Filters.AddFilter(func(fields log.Fields) bool {
+		index := fields.Get("index").(string)
+		metrics := fields.Get("data").(map[string]interface{})
+
+		if strings.Contains(index, "lovecottages") {
+
+			// If there is a single nightly metric that is the default range then we can not log this search request
+			if metric, exists := elasticsearch.FindMetricByName(elasticsearch.MetricNightlyLowPrice, metrics); exists {
+				nightlyLowMetric := metric.(elasticsearch.MetricRangeData)
+
+				if nightlyLowMetric.Minimum == 0 && nightlyLowMetric.Maximum == 9999 {
+					return false
+				}
+			}
+
+		}
+
+		return true
+	})
+
 	return func(res http.ResponseWriter, req *http.Request) {
 		//requestPayload := ParseRequestBody(req)
 
@@ -57,28 +86,27 @@ func NewReverseProxyHandler(ctx ReverseProxyHandlerContext) ReverseProxyHandler 
 		req.Host = ctx.Target.Host
 
 		if req.Method != "OPTIONS" {
-			if requestType == RequestElasticsearch {
 
-				if requestType == RequestElasticsearch {
-					parsedQueryLines := elasticsearch.ParseQueries(DecodeRequestBodyToString(req))
-
-					for _, query := range elasticsearch.DeDuplicateJsonLines(parsedQueryLines) {
-						fields := GenerateElasticsearchQueryFields(requestType, requestedUrl, req, query)
-						metrics := fields.Get("data").(map[string]interface{})
-
-						if len(metrics) > 0 {
-							// Since this is the elasticsearch queries, we want to de-bounce which is handled by the queue
-							ctx.Queue.Channel <- elasticsearch.QueueLogEntry{
-								Key:    fmt.Sprintf("%s", fields.Get("ip")),
-								Fields: fields,
-							}
-						}
-					}
-				}
-
-			} else {
+			if requestType != RequestElasticsearch {
 				fields := GenerateDefaultFields(requestType, requestedUrl, req)
 				go LogData(&fields)
+			} else {
+
+				parsedQueryLines := elasticsearch.ParseQueries(DecodeRequestBodyToString(req))
+
+				for _, query := range elasticsearch.DeDuplicateJsonLines(parsedQueryLines) {
+					fields := GenerateElasticsearchQueryFields(requestType, requestedUrl, req, query)
+
+					if ctx.Filters.Process(fields) {
+						// Since this is the elasticsearch queries, we want to de-bounce which is handled by the queue
+						ctx.Queue.Channel <- elasticsearch.QueueLogEntry{
+							Key:    fmt.Sprintf("%s", fields.Get("ip")),
+							Fields: fields,
+						}
+					} else {
+						log.Debug("Query did not match the provided filters")
+					}
+				}
 			}
 		}
 

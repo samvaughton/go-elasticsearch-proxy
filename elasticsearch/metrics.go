@@ -116,6 +116,16 @@ func ParseStandardRangeQuery(metricType string, query gjson.Result) interface{} 
 	}
 }
 
+func FindMetricByName(name string, metrics map[string]interface{}) (interface{}, bool) {
+	for metricName, metric := range metrics {
+		if metricName == name {
+			return metric, true
+		}
+	}
+
+	return nil, false
+}
+
 // This will attempt to extract meaning data from the query into easier to understand format
 func ExtractQueryMetrics(query gjson.Result) map[string]interface{} {
 	// Things we want to extract
