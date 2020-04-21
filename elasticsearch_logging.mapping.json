@@ -14,52 +14,22 @@
                   }
                 }
               },
-              "bedrooms": {
-                "properties": {
-                  "minimum": {
-                    "type": "long"
-                  },
-                  "maximum": {
-                    "type": "long"
-                  }
-                }
-              },
               "bathrooms": {
                 "properties": {
-                  "minimum": {
+                  "maximum": {
                     "type": "long"
                   },
-                  "maximum": {
+                  "minimum": {
                     "type": "long"
                   }
                 }
               },
-              "guests": {
+              "bedrooms": {
                 "properties": {
-                  "minimum": {
-                    "type": "long"
-                  },
                   "maximum": {
                     "type": "long"
-                  }
-                }
-              },
-              "nightlyLow": {
-                "properties": {
-                  "minimum": {
-                    "type": "long"
                   },
-                  "maximum": {
-                    "type": "long"
-                  }
-                }
-              },
-              "nightlyHigh": {
-                "properties": {
                   "minimum": {
-                    "type": "long"
-                  },
-                  "maximum": {
                     "type": "long"
                   }
                 }
@@ -77,6 +47,39 @@
                   }
                 }
               },
+              "features": {
+                "type": "nested",
+                "properties": {
+                  "items": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  },
+                  "searchType": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  }
+                }
+              },
+              "guests": {
+                "properties": {
+                  "maximum": {
+                    "type": "long"
+                  },
+                  "minimum": {
+                    "type": "long"
+                  }
+                }
+              },
               "location": {
                 "properties": {
                   "distance": {
@@ -90,32 +93,38 @@
                   }
                 }
               },
-              "features": {
-                "type": "nested",
+              "nightlyHigh": {
                 "properties": {
-                  "searchType": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
+                  "maximum": {
+                    "type": "long"
                   },
-                  "items": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
+                  "minimum": {
+                    "type": "long"
+                  }
+                }
+              },
+              "nightlyLow": {
+                "properties": {
+                  "maximum": {
+                    "type": "long"
+                  },
+                  "minimum": {
+                    "type": "long"
                   }
                 }
               }
             }
           },
           "host": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "userAgent": {
             "type": "text",
             "fields": {
               "keyword": {
@@ -143,20 +152,14 @@
             }
           },
           "rawQuery": {
-            "eager_global_ordinals": false,
-            "index_phrases": false,
-            "fielddata": false,
-            "norms": true,
-            "index": true,
-            "store": true,
             "type": "text",
+            "store": true,
             "fields": {
               "keyword": {
-                "ignore_above": 256,
-                "type": "keyword"
+                "type": "keyword",
+                "ignore_above": 256
               }
-            },
-            "index_options": "positions"
+            }
           },
           "type": {
             "type": "text",

@@ -152,6 +152,7 @@ func GenerateDefaultFields(requestType int, requestedUrl string, req *http.Reque
 		"url":  requestedUrl,
 		"host": req.Header.Get("Host"),
 		"ip":   ip,
+		"userAgent": req.Header.Get("User-Agent"),
 		"data": "",
 	}
 }
@@ -177,6 +178,7 @@ func GenerateElasticsearchQueryFields(requestType int, requestedUrl string, req 
 		"host":     req.Header.Get("Host"),
 		"ip":       ip,
 		"index":    indexName,
+		"userAgent": req.Header.Get("User-Agent"),
 		"rawQuery": actualQuery.String(),
 		"data":     elasticsearch.ExtractQueryMetrics(actualQuery),
 	}
