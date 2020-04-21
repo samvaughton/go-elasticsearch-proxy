@@ -4,6 +4,7 @@ import (
 	"elasticsearch-proxy/elasticsearch"
 	"fmt"
 	"github.com/apex/log"
+	"github.com/samvaughton/crawlerdetection"
 	"github.com/tidwall/gjson"
 	"net"
 	"net/http"
@@ -46,13 +47,30 @@ type ReverseProxyHandler func(res http.ResponseWriter, req *http.Request)
 
 func NewReverseProxyHandler(ctx ReverseProxyHandlerContext) ReverseProxyHandler {
 
-	ctx.Filters.AddFilter(func(fields log.Fields) bool {
+	// Crawler check
+	ctx.Filters.AddFilter(func(req *http.Request, fields log.Fields) bool {
+		userAgent := req.Header.Get("User-Agent")
+
+		if userAgent == "" {
+			log.WithField("userAgent", userAgent).Debug("No User-Agent provided, skipping")
+			return false // Do not accept search req's with no user agent
+		}
+
+		if crawlerdetection.IsCrawler(userAgent) {
+			log.WithField("userAgent", userAgent).Debug("Crawler detected, skipping")
+			return false
+		}
+
+		return true
+	})
+
+	ctx.Filters.AddFilter(func(req *http.Request, fields log.Fields) bool {
 		metrics := fields.Get("data").(map[string]interface{})
 
 		return len(metrics) > 0
 	})
 
-	ctx.Filters.AddFilter(func(fields log.Fields) bool {
+	ctx.Filters.AddFilter(func(req *http.Request, fields log.Fields) bool {
 		index := fields.Get("index").(string)
 		metrics := fields.Get("data").(map[string]interface{})
 
@@ -97,7 +115,7 @@ func NewReverseProxyHandler(ctx ReverseProxyHandlerContext) ReverseProxyHandler 
 				for _, query := range elasticsearch.DeDuplicateJsonLines(parsedQueryLines) {
 					fields := GenerateElasticsearchQueryFields(requestType, requestedUrl, req, query)
 
-					if ctx.Filters.Process(fields) {
+					if ctx.Filters.Process(req, fields) {
 						// Since this is the elasticsearch queries, we want to de-bounce which is handled by the queue
 						ctx.Queue.Channel <- elasticsearch.QueueLogEntry{
 							Key:    fmt.Sprintf("%s", fields.Get("ip")),
