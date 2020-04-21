@@ -5,3 +5,4 @@ config.yml
 *.crt
 *.key
 elasticsearch-proxy
+*.sh
