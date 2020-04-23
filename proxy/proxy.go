@@ -101,6 +101,7 @@ func NewReverseProxyHandler(ctx ReverseProxyHandlerContext) ReverseProxyHandler 
 		req.URL.Host = ctx.Target.Host
 		req.URL.Scheme = ctx.Target.Scheme
 		req.Header.Set("X-Forwarded-Host", req.Header.Get("Host"))
+		req.Header.Set("X-Forwarded-Origin", req.Header.Get("Origin"))
 		req.Host = ctx.Target.Host
 
 		if req.Method != "OPTIONS" {
@@ -147,10 +148,17 @@ func GenerateDefaultFields(requestType int, requestedUrl string, req *http.Reque
 		log.Error("Failed to split the host/port on remote address: " + req.RemoteAddr)
 	}
 
+	parsedOrigin, err := url.Parse(req.Header.Get("Origin"))
+	host := ""
+	if err == nil {
+		host = parsedOrigin.Host
+	}
+
 	return log.Fields{
 		"type": GetRequestTypeString(requestType),
 		"url":  requestedUrl,
-		"host": req.Header.Get("Host"),
+		"host": host,
+		"app":     	req.Header.Get("X-App"),
 		"ip":   ip,
 		"userAgent": req.Header.Get("User-Agent"),
 		"data": "",
@@ -172,10 +180,17 @@ func GenerateElasticsearchQueryFields(requestType int, requestedUrl string, req 
 		log.Error("Failed to split the host/port on remote address: " + req.RemoteAddr)
 	}
 
+	parsedOrigin, err := url.Parse(req.Header.Get("Origin"))
+	host := ""
+	if err == nil {
+		host = parsedOrigin.Host
+	}
+
 	return log.Fields{
 		"type":     GetRequestTypeString(requestType),
 		"url":      requestedUrl,
-		"host":     req.Header.Get("Host"),
+		"host":     host,
+		"app":     	req.Header.Get("X-App"),
 		"ip":       ip,
 		"index":    indexName,
 		"userAgent": req.Header.Get("User-Agent"),

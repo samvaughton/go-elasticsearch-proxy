@@ -127,6 +127,15 @@
               }
             }
           },
+          "app": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
           "userAgent": {
             "type": "text",
             "fields": {
