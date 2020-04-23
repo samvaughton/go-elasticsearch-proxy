@@ -12,6 +12,7 @@ My first foray into Go, this application runs a HTTP proxy intended for Elastics
  
  ## Todos
  
+ - Add a timeout for the buffer to automatically send the logs
  - Separate queries used for pulling single records as opposed to actual "search" queries
  - Add in security and normal features similar to other elasticsearch proxies
  - Make the query metrics parsing / extraction extensible (custom handlers etc)
