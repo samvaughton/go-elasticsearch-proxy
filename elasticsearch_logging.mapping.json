@@ -90,6 +90,9 @@
                   },
                   "longitude": {
                     "type": "long"
+                  },
+                  "geoPoint": {
+                    "type": "geo_point"
                   }
                 }
               },

@@ -35,6 +35,12 @@ type MetricLocationData struct {
 	Distance  string  `json:"distance"`
 	Latitude  float64 `json:"latitude"`
 	Longitude float64 `json:"longitude"`
+	GeoPoint GeoPointData `json:"geoPoint"`
+}
+
+type GeoPointData struct {
+	Lat float64 `json:"lat"`
+	Lon float64 `json:"lon"`
 }
 
 type MetricRangeData struct {
@@ -52,6 +58,10 @@ var MetricExtractionHandlersMap = map[string]func(metricType string, query gjson
 			Distance:  query.Get("distance").String(),
 			Latitude:  query.Get("location.1").Float(),
 			Longitude: query.Get("location.0").Float(),
+			GeoPoint: GeoPointData{
+				Lat: query.Get("location.1").Float(),
+				Lon: query.Get("location.0").Float(),
+			},
 		}
 	},
 	MetricDateRange: func(metricType string, query gjson.Result) interface{} {
