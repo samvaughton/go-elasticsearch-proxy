@@ -8,6 +8,7 @@ package elasticsearch
 import (
 	"bytes"
 	"context"
+	"elasticsearch-proxy/util"
 	"encoding/json"
 	"fmt"
 	"github.com/apex/log"
@@ -31,7 +32,7 @@ func (c *ApexHandlerConfig) defaults() {
 	}
 
 	if c.IndexName == "" {
-		c.IndexName = "es-queries"
+		panic("No index specified for logging")
 	}
 }
 
@@ -127,11 +128,11 @@ func (h *Handler) flush(batch *Batch) {
 	size := len(batch.Logs)
 	start := time.Now()
 
-	log.WithField("logs", size).Debug(LogMsg("Flushing logs"))
+	log.WithField("logs", size).Debug(util.LogMsg("Flushing logs"))
 
 	if err := batch.Flush(); err != nil {
-		log.WithField("logs", size).WithField("error", err.Error()).Error(LogMsg("Failed to flush"))
+		log.WithField("logs", size).WithField("error", err.Error()).Error(util.LogMsg("Failed to flush"))
 	}
 
-	log.WithField("logs", size).WithField("time", time.Since(start)).Debug(LogMsg("Flush complete"))
+	log.WithField("logs", size).WithField("time", time.Since(start)).Debug(util.LogMsg("Flush complete"))
 }

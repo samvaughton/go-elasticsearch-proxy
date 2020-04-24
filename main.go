@@ -29,7 +29,7 @@ func main() {
 	log.SetLevelFromString(cfg.Logging.Level)
 	log.SetHandler(text.New(os.Stdout))
 
-	elasticsearch.ConfigureEsLogger(cfg)
+	elasticsearch.ConfigureLoggers(cfg)
 
 	proxy.ConfigureAndStartProxyServer(cfg)
 }

@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"time"
 )
 
 type Config struct {
@@ -29,27 +30,47 @@ type ServerTlsConfig struct {
 }
 
 type ProxyConfig struct {
-	Elasticsearch ProxyElasticsearchConfig `yaml:"elasticsearch"`
+	Elasticsearch ProxyHostConfig `yaml:"elasticsearch"`
+	Lycan         ProxyHostConfig `yaml:"lycan"`
 }
 
-type ProxyElasticsearchConfig struct {
+type ProxyHostConfig struct {
 	Host   string `yaml:"host"`
 	Scheme string `yaml:"scheme"`
 }
 
-type LoggingElasticsearchConfig struct {
-	Host                  string `yaml:"host"`
-	Scheme                string `yaml:"scheme"`
+type Credentials struct {
+	Host     string `yaml:"host"`
+	Scheme   string `yaml:"scheme"`
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+}
+
+func (c *Credentials) GetUrl() string {
+	return c.Scheme + "://" + c.Host
+}
+
+type ElasticsearchIndexQueueConfig struct {
 	Index                 string `yaml:"index"`
-	Username              string `yaml:"username"`
-	Password              string `yaml:"password"`
 	LogBufferSize         int    `yaml:"logBufferSize"`
 	QueryDebounceDuration string `yaml:"queryDebounceDuration"`
 }
 
+func (c *ElasticsearchIndexQueueConfig) ParseDuration() time.Duration {
+	duration, err := time.ParseDuration(c.QueryDebounceDuration)
+
+	if err != nil {
+		panic("Could not parse query debounce duration: " + c.QueryDebounceDuration)
+	}
+
+	return duration
+}
+
 type LoggingConfig struct {
-	Level         string                     `yaml:"level"`
-	Elasticsearch LoggingElasticsearchConfig `yaml:"elasticsearch"`
+	Level                string                        `yaml:"level"`
+	EsCredentials        Credentials                   `yaml:"credentials"`
+	ElasticsearchQueries ElasticsearchIndexQueueConfig `yaml:"elasticsearchQueries"`
+	LycanPriceRequests   ElasticsearchIndexQueueConfig `yaml:"lycanPriceRequests"`
 }
 
 func (s *ServerConfig) IsTlsValid() bool {
@@ -68,12 +89,14 @@ func (s *ServerConfig) IsTlsValid() bool {
 	return true
 }
 
-func (es *ProxyElasticsearchConfig) ParseUrl() (*url.URL, error) {
-	return url.Parse(es.Scheme + "://" + es.Host)
-}
+func (es *ProxyHostConfig) ParseUrl() *url.URL {
+	url, err := url.Parse(es.Scheme + "://" + es.Host)
 
-func (es *LoggingElasticsearchConfig) GetUrl() string {
-	return es.Scheme + "://" + es.Host
+	if err != nil {
+		panic("Could not parse config URL")
+	}
+
+	return url
 }
 
 func LoadFromFile(name string) (Config, error) {

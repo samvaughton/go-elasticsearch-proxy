@@ -9,6 +9,8 @@ const MetricDateRange = "dateRange"
 const MetricLocation = "location"
 const MetricAgency = "agency"
 const MetricFeatures = "features"
+const MetricPropertySearch = "propertySearch"
+const MetricResponse = "response"
 
 // Range types
 const MetricGuests = "guests"
@@ -24,6 +26,15 @@ type MetricDateRangeData struct {
 	ArrivalDate   string  `json:"arrivalDate"`
 	DepartureDate string  `json:"departureDate"`
 	Nights        float64 `json:"nights"`
+}
+
+type MetricKeywordSearchData struct {
+	Term  string `json:"searchTerm"`
+}
+
+type MetricResponseData struct {
+	QueryTimeMs int64	`json:"queryTimeMs"`
+	ResultCount int64 `json:"resultCount"`
 }
 
 type MetricFeaturesData struct {
@@ -53,6 +64,11 @@ type MetricAgencyData struct {
 }
 
 var MetricExtractionHandlersMap = map[string]func(metricType string, query gjson.Result) interface{}{
+	MetricPropertySearch: func(metricType string, query gjson.Result) interface{} {
+		return MetricKeywordSearchData{
+			Term: query.Get("query").String(),
+		}
+	},
 	MetricLocation: func(metricType string, query gjson.Result) interface{} {
 		return MetricLocationData{
 			Distance:  query.Get("distance").String(),
@@ -137,7 +153,7 @@ func FindMetricByName(name string, metrics map[string]interface{}) (interface{},
 }
 
 // This will attempt to extract meaning data from the query into easier to understand format
-func ExtractQueryMetrics(query gjson.Result) map[string]interface{} {
+func ExtractQueryMetrics(query gjson.Result, queryResponse gjson.Result) map[string]interface{} {
 	// Things we want to extract
 	// Location bool.must[].bool.must[].bool.should[].geo_distance { distance, location }
 	// Dates bool.must[].bool.must[].bool.must[].bool.must[].script.script { id "lycan_availability_filter_advanced", params.arrivalDate, params.departureDate }
@@ -146,8 +162,20 @@ func ExtractQueryMetrics(query gjson.Result) map[string]interface{} {
 	metrics := make(map[string]interface{})
 
 	ExtractQueryMetricsRecursive(query, metrics)
+	ExtractQueryResponseMetrics(queryResponse, metrics)
 
 	return metrics
+}
+
+func ExtractQueryResponseMetrics(queryResponse gjson.Result, metrics map[string]interface{}) {
+	if !queryResponse.Exists() {
+		return
+	}
+
+	metrics[MetricResponse] = MetricResponseData{
+		QueryTimeMs: queryResponse.Get("took").Int(),
+		ResultCount: queryResponse.Get("hits.total.value").Int(),
+	}
 }
 
 type RecursiveQueryParserResult struct {
@@ -247,6 +275,10 @@ func DetermineMetric(key string, query gjson.Result) string {
 		if list.IsArray() && len(list.Array()) > 0 {
 			return MetricFeatures
 		}
+	}
+
+	if multiMatchObj := query.Get("multi_match"); multiMatchObj.Exists() {
+		return MetricPropertySearch
 	}
 
 	return MetricUnknown

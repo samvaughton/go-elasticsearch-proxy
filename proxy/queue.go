@@ -1,6 +1,7 @@
-package elasticsearch
+package proxy
 
 import (
+	"elasticsearch-proxy/util"
 	"fmt"
 	"github.com/apex/log"
 	"sync"
@@ -17,6 +18,7 @@ type Queue struct {
 	Channel          chan QueueLogEntry
 	Items            map[string]*QueueItem
 	Mutex            sync.Mutex
+	Logger			 log.Logger
 }
 
 type QueueLogEntry struct {
@@ -34,15 +36,14 @@ func (qi *QueueItem) AddLog(fields log.Fields) {
 	qi.Logs = append(qi.Logs, fields)
 }
 
-func NewQueue(debounce time.Duration) Queue {
-	queue := Queue{
+func NewQueue(debounce time.Duration, logger log.Logger) Queue {
+	return Queue{
 		DebounceInterval: debounce,
 		Channel:          make(chan QueueLogEntry, 1000),
 		Items:            make(map[string]*QueueItem),
 		Mutex:            sync.Mutex{},
+		Logger:           logger,
 	}
-
-	return queue
 }
 
 func (q *Queue) Start() {
@@ -75,8 +76,8 @@ func (q *Queue) Start() {
 
 				fields := lastEntry.Fields()
 
-				log.WithFields(fields).Info(fmt.Sprintf(LogMsg("Added to buffer (debounced %d queries)"), len(qi.Logs)))
-				EsLogger.WithFields(fields).Info(fmt.Sprintf("%v", fields.Get("url")))
+				log.WithFields(fields).Info(fmt.Sprintf(util.LogMsg("Added to buffer (debounced %d queries)"), len(qi.Logs)))
+				q.Logger.WithFields(fields).Info(fmt.Sprintf("%v", fields.Get("url")))
 			}
 
 			// Now we reset the map as we have done our "logging"

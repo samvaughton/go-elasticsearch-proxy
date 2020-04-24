@@ -2,24 +2,20 @@ package elasticsearch
 
 import (
 	"elasticsearch-proxy/config"
-	"fmt"
+	"elasticsearch-proxy/util"
 	"github.com/apex/log"
 	"github.com/elastic/go-elasticsearch/v7"
-	"time"
 )
 
-var EsLogger *log.Logger
+var EsQueryLogger *log.Logger
+var LycanPriceRequestLogger *log.Logger
 
-func LogMsg(message string) string {
-	return fmt.Sprintf("%s ES Logger: %s", time.Now(), message)
-}
-
-func ConfigureEsLogger(cfg config.Config) {
+func ConfigureLoggers(cfg config.Config) {
 	esCfg := elasticsearch.Config{
-		Username: cfg.Logging.Elasticsearch.Username,
-		Password: cfg.Logging.Elasticsearch.Password,
+		Username: cfg.Logging.EsCredentials.Username,
+		Password: cfg.Logging.EsCredentials.Password,
 		Addresses: []string{
-			cfg.Logging.Elasticsearch.GetUrl(),
+			cfg.Logging.EsCredentials.GetUrl(),
 		},
 	}
 
@@ -28,17 +24,34 @@ func ConfigureEsLogger(cfg config.Config) {
 	if err != nil {
 		log.Error(err.Error())
 	} else {
-		log.Debug(LogMsg("Connected to Elasticsearch for query logging on: " + cfg.Logging.Elasticsearch.GetUrl()))
+		log.Debug(util.LogMsg("Connected to Elasticsearch for query logging on: " + cfg.Logging.EsCredentials.GetUrl()))
 	}
 
-	if EsLogger == nil {
+	if client == nil {
+		panic("Could not configure ES client")
+	}
+
+	if EsQueryLogger == nil {
 		handler := NewElasticsearchHandler(&ApexHandlerConfig{
-			BufferSize: cfg.Logging.Elasticsearch.LogBufferSize,
-			IndexName:  cfg.Logging.Elasticsearch.Index,
+			BufferSize: cfg.Logging.ElasticsearchQueries.LogBufferSize,
+			IndexName:  cfg.Logging.ElasticsearchQueries.Index,
 			Client:     *client,
 		})
 
-		EsLogger = &log.Logger{
+		EsQueryLogger = &log.Logger{
+			Handler: handler,
+			Level:   log.InfoLevel,
+		}
+	}
+
+	if LycanPriceRequestLogger == nil {
+		handler := NewElasticsearchHandler(&ApexHandlerConfig{
+			BufferSize: cfg.Logging.LycanPriceRequests.LogBufferSize,
+			IndexName:  cfg.Logging.LycanPriceRequests.Index,
+			Client:     *client,
+		})
+
+		LycanPriceRequestLogger = &log.Logger{
 			Handler: handler,
 			Level:   log.InfoLevel,
 		}

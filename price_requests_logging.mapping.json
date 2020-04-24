@@ -5,79 +5,82 @@
         "properties": {
           "data": {
             "properties": {
+              "property": {
+                "properties": {
+                  "name": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  },
+                  "uuid": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  }
+                }
+              },
+              "context": {
+                "properties": {
+                  "currency": {
+                    "type": "text",
+                    "fields": {
+                      "keyword": {
+                        "type": "keyword",
+                        "ignore_above": 256
+                      }
+                    }
+                  },
+                  "guests": {
+                    "properties": {
+                      "total": {
+                        "type": "integer"
+                      },
+                      "adults": {
+                        "type": "integer"
+                      },
+                      "children": {
+                        "type": "integer"
+                      },
+                      "infants": {
+                        "type": "integer"
+                      },
+                      "pets": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "dateRange": {
+                    "properties": {
+                      "arrivalDate": {
+                        "type": "date"
+                      },
+                      "departureDate": {
+                        "type": "date"
+                      },
+                      "nights": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              },
               "response": {
                 "properties": {
-                  "queryTimeMs": {
-                    "type": "long"
+                  "isAvailable": {
+                    "type": "boolean"
                   },
-                  "resultCount": {
-                    "type": "long"
-                  }
-                }
-              },
-              "agency": {
-                "properties": {
-                  "companyName": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
-              },
-              "propertySearch": {
-                "properties": {
-                  "searchTerm": {
-                    "type": "text",
-                    "fields": {
-                      "keyword": {
-                        "type": "keyword",
-                        "ignore_above": 256
-                      }
-                    }
-                  }
-                }
-              },
-              "bathrooms": {
-                "properties": {
-                  "maximum": {
-                    "type": "long"
+                  "isPriced": {
+                    "type": "boolean"
                   },
-                  "minimum": {
-                    "type": "long"
-                  }
-                }
-              },
-              "bedrooms": {
-                "properties": {
-                  "maximum": {
-                    "type": "long"
-                  },
-                  "minimum": {
-                    "type": "long"
-                  }
-                }
-              },
-              "dateRange": {
-                "properties": {
-                  "arrivalDate": {
-                    "type": "date"
-                  },
-                  "departureDate": {
-                    "type": "date"
-                  },
-                  "nights": {
-                    "type": "long"
-                  }
-                }
-              },
-              "features": {
-                "type": "nested",
-                "properties": {
-                  "items": {
+                  "bookableType": {
                     "type": "text",
                     "fields": {
                       "keyword": {
@@ -86,7 +89,16 @@
                       }
                     }
                   },
-                  "searchType": {
+                  "total": {
+                    "type": "long"
+                  },
+                  "basePrice": {
+                    "type": "long"
+                  },
+                  "damageDeposit": {
+                    "type": "long"
+                  },
+                  "currency": {
                     "type": "text",
                     "fields": {
                       "keyword": {
@@ -94,52 +106,9 @@
                         "ignore_above": 256
                       }
                     }
-                  }
-                }
-              },
-              "guests": {
-                "properties": {
-                  "maximum": {
-                    "type": "long"
                   },
-                  "minimum": {
-                    "type": "long"
-                  }
-                }
-              },
-              "location": {
-                "properties": {
-                  "distance": {
-                    "type": "text"
-                  },
-                  "latitude": {
-                    "type": "long"
-                  },
-                  "longitude": {
-                    "type": "long"
-                  },
-                  "geoPoint": {
-                    "type": "geo_point"
-                  }
-                }
-              },
-              "nightlyHigh": {
-                "properties": {
-                  "maximum": {
-                    "type": "long"
-                  },
-                  "minimum": {
-                    "type": "long"
-                  }
-                }
-              },
-              "nightlyLow": {
-                "properties": {
-                  "maximum": {
-                    "type": "long"
-                  },
-                  "minimum": {
-                    "type": "long"
+                  "statusCode": {
+                    "type": "integer"
                   }
                 }
               }
@@ -190,7 +159,7 @@
               }
             }
           },
-          "rawQuery": {
+          "rawParams": {
             "type": "text",
             "store": true,
             "fields": {
