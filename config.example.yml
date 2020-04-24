@@ -9,17 +9,29 @@ server:
     privateKeyPath: ""
 
 proxy:
+  lycan:
+    scheme: "https"
+    host: "lycan.rentivo.com"
+
   elasticsearch:
     scheme: "https"
     host: "localhost:9243"
 
 logging:
   level: "error"
-  elasticsearch:
+
+  credentials:
     scheme: "https"
     host: "localhost:9243"
-    index: "query-log-index"
     username: "elastic"
     password: "password"
+
+  elasticsearchQueries:
+    index: "test-es-queries"
+    logBufferSize: 20
+    queryDebounceDuration: "3000ms"
+
+  lycanPriceRequests:
+    index: "test-price-requests"
     logBufferSize: 20
     queryDebounceDuration: "3000ms"
