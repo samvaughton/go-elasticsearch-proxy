@@ -1,6 +1,7 @@
 package lycan
 
 import (
+	"crypto/sha1"
 	"github.com/tidwall/gjson"
 	"net/url"
 	"strconv"
@@ -19,9 +20,10 @@ type PropertyData struct {
 }
 
 type PriceContextData struct {
-	Currency  string        `json:"currency"`
-	Guests    GuestData     `json:"guests"`
-	DateRange DateRangeData `json:"dateRange"`
+	Currency    string        `json:"currency"`
+	Guests      GuestData     `json:"guests"`
+	DateRange   DateRangeData `json:"dateRange"`
+	Fingerprint string        `json:"fingerprint"`
 }
 
 type GuestData struct {
@@ -63,6 +65,22 @@ func CalculateNights(arrivalDate string, departureDate string) int {
 	return int(nights)
 }
 
+/*
+ * This function generates a fingerprint based on the unique vectors of a price request.
+ * These vectors being property ID, arrival & departure date, total guests & pets
+ */
+func GenerateFingerprint(params url.Values) string {
+	sha := sha1.New()
+
+	sha.Write([]byte(GetQueryString("propertyUuid", params)))
+	sha.Write([]byte(GetQueryString("arrivalDate", params)))
+	sha.Write([]byte(GetQueryString("departureDate", params)))
+	sha.Write([]byte(GetQueryString("adults", params)))
+	sha.Write([]byte(GetQueryString("pets", params)))
+
+	return string(sha.Sum(nil))
+}
+
 func ExtractPriceRequestData(params url.Values, priceResponse gjson.Result, statusCode int) PriceRequestData {
 	return PriceRequestData{
 		Property: PropertyData{
@@ -71,28 +89,29 @@ func ExtractPriceRequestData(params url.Values, priceResponse gjson.Result, stat
 		},
 		Context: PriceContextData{
 			Currency: GetQueryString("currency", params),
+			Fingerprint: GenerateFingerprint(params),
 			Guests: GuestData{
-				Pets: GetQueryInteger("pets", params),
-				Adults: GetQueryInteger("adults", params),
+				Pets:     GetQueryInteger("pets", params),
+				Adults:   GetQueryInteger("adults", params),
 				Children: GetQueryInteger("children", params),
-				Infants: GetQueryInteger("infants", params),
-				Total: GetQueryInteger("adults", params) + GetQueryInteger("children", params) + GetQueryInteger("infants", params),
+				Infants:  GetQueryInteger("infants", params),
+				Total:    GetQueryInteger("adults", params) + GetQueryInteger("children", params) + GetQueryInteger("infants", params),
 			},
 			DateRange: DateRangeData{
-				ArrivalDate: GetQueryString("arrival", params),
+				ArrivalDate:   GetQueryString("arrival", params),
 				DepartureDate: GetQueryString("departure", params),
-				Nights: CalculateNights(GetQueryString("arrival", params), GetQueryString("departure", params)),
+				Nights:        CalculateNights(GetQueryString("arrival", params), GetQueryString("departure", params)),
 			},
 		},
 		Response: PriceResponseData{
-			IsAvailable: priceResponse.Get("isAvailable").Bool(),
-			IsPriced: priceResponse.Get("isPriced").Bool(),
-			BookableType: priceResponse.Get("bookableType").String(),
-			Total: priceResponse.Get("total").Float(),
-			BasePrice: priceResponse.Get("basePrice").Float(),
+			IsAvailable:   priceResponse.Get("isAvailable").Bool(),
+			IsPriced:      priceResponse.Get("isPriced").Bool(),
+			BookableType:  priceResponse.Get("bookableType").String(),
+			Total:         priceResponse.Get("total").Float(),
+			BasePrice:     priceResponse.Get("basePrice").Float(),
 			DamageDeposit: priceResponse.Get("damageDeposit").Float(),
-			Currency: priceResponse.Get("currency").String(),
-			StatusCode: statusCode,
+			Currency:      priceResponse.Get("currency").String(),
+			StatusCode:    statusCode,
 		},
 	}
 }
