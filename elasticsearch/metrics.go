@@ -247,6 +247,8 @@ func DetermineMetric(key string, query gjson.Result) string {
 		return MetricLocation
 	case "listing.sleeps":
 		return MetricGuests
+	case "listing.maxOccupancy":
+		return MetricGuests
 	case "listing.maxPets":
 		return MetricPets
 	case "listing.bedrooms":
