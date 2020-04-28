@@ -2,6 +2,7 @@ package lycan
 
 import (
 	"crypto/sha1"
+	"fmt"
 	"github.com/tidwall/gjson"
 	"net/url"
 	"strconv"
@@ -78,7 +79,7 @@ func GenerateFingerprint(params url.Values) string {
 	sha.Write([]byte(GetQueryString("adults", params)))
 	sha.Write([]byte(GetQueryString("pets", params)))
 
-	return string(sha.Sum(nil))
+	return fmt.Sprintf("%x", sha.Sum(nil))
 }
 
 func ExtractPriceRequestData(params url.Values, priceResponse gjson.Result, statusCode int) PriceRequestData {
