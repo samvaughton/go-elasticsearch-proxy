@@ -14,6 +14,7 @@ import (
 func NewLycanReverseProxyHandler(ctx *ReverseProxyHandlerContext) ReverseProxyHandler {
 	ctx.Proxy.Transport = &MiddlewareTransport{
 		http.DefaultTransport,
+		nil,
 		ctx,
 		ProcessLycanRequest,
 	}
@@ -45,7 +46,7 @@ func ProcessLycanRequest(ctx ReverseProxyHandlerContext, req *http.Request, resp
 		resp.StatusCode,
 	)
 
-	if ctx.Filters.Process(req, fields) {
+	if ctx.LoggingFilters.Process(req, fields) {
 		// Since this is the elasticsearch queries, we want to de-bounce which is handled by the queue
 		ctx.Queue.Channel <- QueueLogEntry{
 			Key:    fmt.Sprintf("%s", fields.Get("ip")),

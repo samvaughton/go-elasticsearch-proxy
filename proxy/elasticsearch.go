@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"elasticsearch-proxy/cache"
 	"elasticsearch-proxy/elasticsearch"
 	"elasticsearch-proxy/util"
 	"fmt"
@@ -16,12 +17,13 @@ import (
 func NewElasticsearchReverseProxyHandler(ctx *ReverseProxyHandlerContext) ReverseProxyHandler {
 	ctx.Proxy.Transport = &MiddlewareTransport{
 		http.DefaultTransport,
+		cache.NewStorage(),
 		ctx,
 		ProcessElasticRequest,
 	}
 
 	// Crawler check
-	ctx.Filters.AddFilter(func(req *http.Request, fields log.Fields) bool {
+	ctx.LoggingFilters.AddFilter(func(req *http.Request, fields log.Fields) bool {
 		if req.Header.Get("Debug") != "" {
 			return true
 		}
@@ -41,13 +43,13 @@ func NewElasticsearchReverseProxyHandler(ctx *ReverseProxyHandlerContext) Revers
 		return true
 	})
 
-	ctx.Filters.AddFilter(func(req *http.Request, fields log.Fields) bool {
+	ctx.LoggingFilters.AddFilter(func(req *http.Request, fields log.Fields) bool {
 		metrics := fields.Get("data").(map[string]interface{})
 
 		return len(metrics) > 0
 	})
 
-	ctx.Filters.AddFilter(func(req *http.Request, fields log.Fields) bool {
+	ctx.LoggingFilters.AddFilter(func(req *http.Request, fields log.Fields) bool {
 		index := fields.Get("index").(string)
 		metrics := fields.Get("data").(map[string]interface{})
 
@@ -102,7 +104,7 @@ func ProcessElasticRequest(ctx ReverseProxyHandlerContext, req *http.Request, re
 
 		fields := GenerateElasticsearchQueryFields(requestType, requestedUrl, req, query, queryResponse)
 
-		if ctx.Filters.Process(req, fields) == false {
+		if ctx.LoggingFilters.Process(req, fields) == false {
 			log.Debug("Query did not match the provided filters")
 
 			continue

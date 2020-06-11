@@ -6,7 +6,7 @@ import (
 )
 
 /*
- * Filters determine whether or not this query should be logged, some queries may be filtered out because they have no metrics
+ * LoggingFilters determine whether or not this query should be logged, some queries may be filtered out because they have no metrics
  * whereas some might match a host or an IP and be filtered out
  */
 

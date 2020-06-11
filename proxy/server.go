@@ -28,10 +28,10 @@ type ReverseProxyHandlerConfig struct {
 }
 
 type ReverseProxyHandlerContext struct {
-	Target  *url.URL
-	Proxy   *httputil.ReverseProxy
-	Queue   *Queue
-	Filters FilterProcessor
+	Target         *url.URL
+	Proxy          *httputil.ReverseProxy
+	Queue          *Queue
+	LoggingFilters FilterProcessor
 }
 
 type ReverseProxyHandler func(res http.ResponseWriter, req *http.Request)
@@ -58,10 +58,10 @@ func NewSingleHostReverseProxy(targetUrl *url.URL) *httputil.ReverseProxy {
 
 func NewReverseProxyHandlerContext(targetUrl *url.URL, proxy *httputil.ReverseProxy, queue *Queue) ReverseProxyHandlerContext {
 	return ReverseProxyHandlerContext{
-		Target:  targetUrl,
-		Proxy:   proxy,
-		Queue:   queue,
-		Filters: NewFilterProcessor(),
+		Target:         targetUrl,
+		Proxy:          proxy,
+		Queue:          queue,
+		LoggingFilters: NewFilterProcessor(),
 	}
 }
 
