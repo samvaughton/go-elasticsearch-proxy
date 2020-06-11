@@ -22,6 +22,10 @@ func NewElasticsearchReverseProxyHandler(ctx *ReverseProxyHandlerContext) Revers
 
 	// Crawler check
 	ctx.Filters.AddFilter(func(req *http.Request, fields log.Fields) bool {
+		if req.Header.Get("Debug") != "" {
+			return true
+		}
+
 		userAgent := req.Header.Get("User-Agent")
 
 		if userAgent == "" {
