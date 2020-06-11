@@ -1,4 +1,4 @@
-# Elasticsearch Query Proxy
+# Zazu - API & Elasticsearch Query Proxy
 
 My first foray into Go, this application runs a HTTP proxy intended for Elasticsearch and performs the following functions:
 
@@ -12,15 +12,13 @@ My first foray into Go, this application runs a HTTP proxy intended for Elastics
  
  ## Todos
  
- - Add a timeout for the buffer to automatically send the logs
  - Separate queries used for pulling single records as opposed to actual "search" queries
  - Add in security and normal features similar to other elasticsearch proxies
  - Make the query metrics parsing / extraction extensible (custom handlers etc)
- - Add in some form of caching for the actual ES responses
  
  ## Setup
  
- - Let's Encrypt needs port 443 to perform the tls-alpn-01 challenge, use this command if you do not want to run as root:
+ - Let's Encrypt needs port 443 to perform the `tls-alpn-01` challenge, use this command if you do not want to run as root:
  
  `sudo setcap cap_net_bind_service=+ep ./elasticsearch-proxy`
  
