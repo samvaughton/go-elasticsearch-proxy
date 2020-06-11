@@ -38,12 +38,16 @@ func (s *Storage) RunCacheEvictionRoutine() {
 	for {
 		select {
 		case <-time.After(time.Second * 60):
+			s.mu.Lock()
+
 			for key, item := range s.items {
 				if item.Expired() {
 					delete(s.items, key)
 					log.Debug("Evicted cache key: " + key)
 				}
 			}
+
+			s.mu.Unlock()
 		}
 	}
 }
@@ -58,12 +62,6 @@ func (s *Storage) Get(key string) []byte {
 		return nil
 	}
 
-	if item.Expired() {
-		delete(s.items, key)
-
-		return nil
-	}
-
 	return item.Content
 }
 
@@ -71,15 +69,9 @@ func (s *Storage) Has(key string) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	item, exists := s.items[key]
+	_, exists := s.items[key]
 
 	if !exists {
-		return false
-	}
-
-	if item.Expired() {
-		delete(s.items, key)
-
 		return false
 	}
 
