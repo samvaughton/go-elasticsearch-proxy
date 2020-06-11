@@ -37,7 +37,8 @@ func (t *MiddlewareTransport) RoundTrip(req *http.Request) (resp *http.Response,
 	hash := fmt.Sprintf("%x", h.Sum(nil))
 
 	if t.Cache != nil && t.Cache.Has(hash) {
-		cachedResp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(t.Cache.Get(hash))), req)
+		cachedBytes := t.Cache.Get(hash)
+		cachedResp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(cachedBytes)), req)
 
 		if err != nil {
 			log.Errorf("Could not read response for key: " + hash, err)
@@ -50,6 +51,20 @@ func (t *MiddlewareTransport) RoundTrip(req *http.Request) (resp *http.Response,
 		// currently commented out as returning the cache response cancels the current http context
 		// before it has a chance to execute
 		// go t.DoRoundTrip(req, decodedRequestBody, hash)
+
+		// We still want to "log" this request though
+		if t.MiddlewareRoutine != nil && len(cachedBytes) > 0 {
+			go t.MiddlewareRoutine(
+				*t.ReverseProxyHandlerContext,
+				req,
+				resp,
+				string(decodedRequestBody),
+				util.DecodeResponseBytes(
+					util.DecodeResponseBodyToBytes(cachedResp),
+					cachedResp.Header.Get("Content-Encoding"),
+				),
+			)
+		}
 
 		return cachedResp, nil
 	}

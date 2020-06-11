@@ -81,7 +81,7 @@ func DecodeResponseBytes(data []byte, contentEncoding string) string {
 		gzipReader, err := gzip.NewReader(bytes.NewReader(data))
 
 		if err != nil {
-			log.Error(err.Error())
+			log.Errorf("Could not create a new reader for gzip: ", err)
 			return ""
 		}
 
@@ -90,7 +90,7 @@ func DecodeResponseBytes(data []byte, contentEncoding string) string {
 		decompressed, err := ioutil.ReadAll(gzipReader)
 
 		if err != nil {
-			log.Error(err.Error())
+			log.Errorf("Could not decode bytes to gzip: ", err)
 			return ""
 		}
 
