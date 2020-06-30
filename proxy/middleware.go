@@ -113,7 +113,7 @@ func (t *MiddlewareTransport) DoRoundTrip(req *http.Request, decodedRequestBody 
 	resp.Header.Set("Content-Length", strconv.Itoa(len(respBytes)))
 
 	if t.Cache != nil && resp.StatusCode >= 200 && resp.StatusCode < 300 && len(respBytes) > 0 {
-		if duration, err := time.ParseDuration("5m"); err == nil {
+		if duration, err := time.ParseDuration("10s"); err == nil {
 			wholeRespBytes, _ := httputil.DumpResponse(resp, true)
 
 			go t.Cache.Set(hash, wholeRespBytes, duration)
