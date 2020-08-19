@@ -97,10 +97,14 @@ func ProcessElasticRequest(ctx ReverseProxyHandlerContext, req *http.Request, re
 	deDuplicatedResponseLines := elasticsearch.DeDuplicateJsonLines(gjson.Parse(decodedResponseBody).Get("responses").Array())
 
 	for index, query := range elasticsearch.DeDuplicateJsonLines(parsedQueryLines) {
-
 		var queryResponse gjson.Result
-		if len(deDuplicatedResponseLines) > 0 {
+		if index >= 0 && index < len(deDuplicatedResponseLines) {
 			queryResponse = deDuplicatedResponseLines[index]
+		} else {
+			// no response found for the query line.. this should not happen very often at all.
+			log.Errorf("ES: Could not match response line to query line", parsedQueryLines, deDuplicatedResponseLines)
+
+			continue
 		}
 
 		fields := GenerateElasticsearchQueryFields(requestType, requestedUrl, req, query, queryResponse)
