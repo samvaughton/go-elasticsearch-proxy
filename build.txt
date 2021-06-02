@@ -1,0 +1,9 @@
+Golang tries to be a static binary but if `os/user` or `net` packages are used, it becomes dynamically linked.
+
+Error: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.32' not found
+
+https://stackoverflow.com/questions/55450061/go-build-with-another-glibc
+
+This can be resolved by disabling CGO (as the packages use this which makes it dynamic).
+
+`env CGO_ENABLED=0 go build`
