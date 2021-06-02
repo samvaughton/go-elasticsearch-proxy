@@ -17,15 +17,15 @@ import (
 
 type MiddlewareTransport struct {
 	http.RoundTripper
-	Cache *cache.Storage
+	Cache                      *cache.Storage
 	ReverseProxyHandlerContext *ReverseProxyHandlerContext
-	MiddlewareRoutine func(ctx ReverseProxyHandlerContext, req *http.Request, resp *http.Response, decodedRequestBody string, decodedResponseBody string)
+	MiddlewareRoutine          func(ctx ReverseProxyHandlerContext, req *http.Request, resp *http.Response, decodedRequestBody string, decodedResponseBody string)
 }
 
 func (t *MiddlewareTransport) RoundTrip(req *http.Request) (resp *http.Response, err error) {
 	var decodedRequestBody []byte
 
-	if req.URL != nil && req.Header != nil  && req.Body != nil {
+	if req.URL != nil && req.Header != nil && req.Body != nil {
 		decodedRequestBody = util.DecodeRequestBodyToBytes(req)
 	}
 
@@ -41,7 +41,7 @@ func (t *MiddlewareTransport) RoundTrip(req *http.Request) (resp *http.Response,
 		cachedResp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(cachedBytes)), req)
 
 		if err != nil {
-			log.Errorf("Could not read response for key: " + hash, err)
+			log.Errorf("Could not read response for key: "+hash, err)
 		}
 
 		cachedResp.Header.Set("X-Cached", hash)
@@ -127,12 +127,12 @@ func addCorsHeader(res http.ResponseWriter) {
 	headers := res.Header()
 	headers.Add("X-Cors", "Yes")
 	headers.Add("Access-Control-Allow-Origin", "*")
-	headers.Add("Access-Control-Allow-Headers", "Content-Type,Origin,Accept,Token,Authorization,X-App,X-Index")
+	headers.Add("Access-Control-Allow-Headers", "Content-Type,Origin,Accept,Token,Authorization,X-App,X-Index,Bypass-Tunnel-Reminder")
 	headers.Add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,PATCH,OPTIONS")
 }
 
 func NewBasicReverseProxyHandler(ctx *ReverseProxyHandlerContext) func(res http.ResponseWriter, req *http.Request) {
-	return func(res http.ResponseWriter, req * http.Request) {
+	return func(res http.ResponseWriter, req *http.Request) {
 
 		// This is called BEFORE the RoundTrip intercept is via ServeHTTP
 
